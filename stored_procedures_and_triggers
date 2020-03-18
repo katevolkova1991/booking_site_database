@@ -1,0 +1,54 @@
+-- Similar apartments in this city. Процедура, предлагающая другие апартаменты в этом же городе.
+
+DROP PROCEDURE IF EXISTS booking_1.offering_apartments;
+
+DELIMITER $$
+$$
+CREATE PROCEDURE booking_1.offering_apartments(IN user_city BIGINT)
+BEGIN
+	SELECT a2.id
+	FROM apartment_info AS a1
+	JOIN apartment_info AS a2 ON a2.city = a1.city
+	WHERE a1.id = user_city
+	AND a2.id <> user_city
+order by rand()
+limit 5
+;
+END$$
+DELIMITER ;
+
+-- How many different apartments do we have? (Group by number of rooms). Процедура, подсчитывающая число апартаментов с разным количеством комнат.
+
+DROP PROCEDURE IF EXISTS booking_1.` counting_rooms`;
+
+DELIMITER $$
+$$
+CREATE PROCEDURE booking_1.` counting_rooms`()
+BEGIN
+  DECLARE one_room_ap INT DEFAULT 0;
+  DECLARE two_room_ap INT DEFAULT 0;
+  DECLARE three_room_ap INT DEFAULT 0;
+  DECLARE four_room_ap INT DEFAULT 0;
+ 
+  SELECT COUNT(*) INTO one_room_ap FROM apartments WHERE rooms = 1;
+  SELECT COUNT(*) INTO two_room_ap FROM apartments WHERE rooms = 2; 
+  SELECT COUNT(*) INTO three_room_ap FROM apartments WHERE rooms = 3;
+  SELECT COUNT(*) INTO four_room_ap FROM apartments WHERE rooms = 4;
+
+  SET @one_room_ap = one_room_ap, @two_room_ap = two_room_ap, @three_room_ap = three_room_ap, @four_room_ap = four_room_ap;
+END$$
+DELIMITER ;
+
+-- Users counting trigger. Триггер, подсчитывающий число пользователей, присоединившихся к сервису.
+USE booking_1;
+
+DELIMITER $$
+$$
+CREATE TRIGGER users_count
+AFTER INSERT
+ON users FOR EACH ROW
+BEGIN 
+	  SELECT COUNT(*) INTO @mates FROM users;
+END
+$$
+DELIMITER ;
