@@ -1,0 +1,12 @@
+-- Представление для удобного обращения к информации об апартаментах.
+CREATE OR REPLACE VIEW apartment_info
+AS
+SELECT a.id, a.price, a.rooms, ad.city, ad.street, ad.house, a.description, a.`free`
+FROM apartments AS a
+JOIN addresses as ad ON a.address_id = ad.id
+ORDER BY a.id
+;
+
+
+-- Представление для удобного обращения к списку апартаментов, отсортированному по количеству комнат.
+CREATE VIEW apartment AS SELECT * FROM apartments ORDER BY rooms;
