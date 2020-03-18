@@ -1,0 +1,158 @@
+drop database if exists booking_1;
+create database booking_1;
+use booking_1;
+
+drop table if exists roles;
+create table roles(
+	id SERIAL PRIMARY KEY,
+	`role` VARCHAR(100) NOT NULL, 
+	
+	index roles_role_idx(`role`)
+);
+
+drop table if exists users;
+create table users(
+	id SERIAL PRIMARY KEY,
+	firstname VARCHAR(100),
+	lastname VARCHAR(100),
+	role_id BIGINT UNSIGNED NOT NULL,
+	email VARCHAR(100) unique,
+	password_hash VARCHAR(100),
+	phone VARCHAR(12),
+	created_at DATETIME DEFAULT now(),
+	updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
+	
+	index users_phone_idx(phone),
+	index users_firstlast_idx(firstname, lastname),
+	
+	foreign key (role_id) references roles(id)
+);
+
+drop table if exists addresses;
+create table addresses(
+	id SERIAL PRIMARY KEY,
+	city VARCHAR(100),
+	street VARCHAR(255),
+	house INT,
+	flat INT,
+	
+	created_at DATETIME DEFAULT now(),
+	updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP
+
+);
+
+drop table if exists apartments;
+create table apartments(
+	id SERIAL PRIMARY KEY,
+	address_id BIGINT UNSIGNED NOT NULL,
+	landlord_id BIGINT UNSIGNED NOT NULL,
+	rooms INT,
+	description VARCHAR(5000),
+	price INT,
+	`free` BIT,
+
+	created_at DATETIME DEFAULT now(),
+	updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
+	
+	index apartments_rooms_idx(rooms),
+	
+	foreign key (address_id) references addresses(id),
+	foreign key (landlord_id) references users(id)
+);
+
+drop table if exists messages;
+create table messages(
+	id SERIAL PRIMARY KEY,
+	from_user_id BIGINT UNSIGNED NOT NULL,
+	to_user_id BIGINT UNSIGNED NOT NULL,
+	body TEXT,
+	created_at DATETIME DEFAULT now(),
+	updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
+	
+	
+	index (from_user_id),
+	index (to_user_id),
+	
+	foreign key (from_user_id) references users(id),
+	foreign key (to_user_id) references users(id)
+
+);
+
+drop table if exists bookings;
+create table bookings(
+	id SERIAL PRIMARY KEY,
+	checkin DATE,
+	checkout DATE,
+	apartment_id BIGINT UNSIGNED NOT NULL,
+	landlord_id BIGINT UNSIGNED NOT NULL,
+	tenant_id BIGINT UNSIGNED NOT NULL,
+
+	created_at DATETIME DEFAULT now(),
+	updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
+	
+	
+	index (apartment_id),
+	index (landlord_id),
+	
+	foreign key (apartment_id) references apartments(id),
+	foreign key (landlord_id) references apartments(landlord_id),
+	foreign key (tenant_id) references users(id)
+
+);
+
+drop table if exists favourites;
+create table favourites(
+	id SERIAL PRIMARY KEY,
+	apartment_id BIGINT UNSIGNED NOT NULL,
+	user_id BIGINT UNSIGNED NOT NULL,
+	
+	foreign key (apartment_id) references apartments(id),
+	foreign key (user_id) references users(id)
+);
+
+drop table if exists comments;
+create table comments(
+	id SERIAL PRIMARY KEY,
+	from_user_id BIGINT UNSIGNED NOT NULL,
+	apartment_id BIGINT UNSIGNED NOT NULL,
+	body TEXT,
+	created_at DATETIME DEFAULT now(),
+	
+	index (from_user_id),
+	
+	foreign key (from_user_id) references users(id),
+	foreign key (apartment_id) references apartments(id)
+);
+
+drop table if exists ratings;
+create table ratings(
+	id SERIAL PRIMARY KEY,
+	user_id BIGINT UNSIGNED NOT NULL,
+	value ENUM('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'),
+	comment VARCHAR(255),
+	apartment_id BIGINT UNSIGNED NOT NULL,
+	created_at DATETIME DEFAULT now(),
+	
+	foreign key (apartment_id) references apartments(id),
+	foreign key (user_id) references users(id)
+);
+
+drop table if exists photo_albums;
+create table photo_albums(
+	id SERIAL,
+	name VARCHAR(200),
+	user_id BIGINT UNSIGNED NOT NULL,
+	
+	PRIMARY KEY (id),
+	foreign key (user_id) references users(id)
+);
+
+drop table if exists photos;
+create table photos(
+	id SERIAL PRIMARY KEY,
+	album_id BIGINT UNSIGNED NULL,
+	apartment_id BIGINT UNSIGNED NULL,
+	
+	foreign key (album_id) references photo_albums(id),
+	foreign key (apartment_id) references apartments(id)
+);
