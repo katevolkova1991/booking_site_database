@@ -1,0 +1,40 @@
+-- Average score for apartments. Средняя оценка для апартаментов на основе поставленных пользователями.
+SELECT ratings.apartment_id AS 'Apartment', round(SUM(ratings.value)/COUNT(ratings.value),1) AS 'Average rating', COUNT(ratings.value) AS 'Number of users who rated'
+FROM ratings
+WHERE apartment_id=1
+-- All the apartments were booked by the user. Все апартаменты, которые арендовал пользователь
+SELECT DISTINCT b.apartment_id, ad.city, ad.street, ad.house
+FROM bookings AS b
+JOIN apartments AS a ON b.apartment_id = a.id 
+JOIN addresses AS ad ON a.address_id = ad.id
+WHERE b.tenant_id = 20
+-- All the apartments of the landlord. Все апартаменты одного арендатора
+SELECT id AS 'Apartment id' 
+FROM apartments
+WHERE landlord_id = 1
+-- Comments about the apartment. Группированные комментарии по апартаментам
+SELECT body AS 'Comments about that apartment'
+FROM comments
+WHERE apartment_id = 1
+Все 1-комнатные, 2-комнатные или 3-комнатные квартиры.
+SELECT a.id, ad.city, ad.street, ad.house, a.description
+FROM apartments AS a
+JOIN addresses as ad ON a.address_id = ad.id
+WHERE a.rooms = 1
+-- Group by price. Группировка по стоимости.
+SELECT a.id, a.price, ad.city, ad.street, ad.house, a.description
+FROM apartments AS a
+JOIN addresses as ad ON a.address_id = ad.id
+WHERE a.price < 4000
+-- Free apartments (address, price and description). Какие апартаменты сейчас свободны, адрес, стоимость описание.
+SELECT a.id, a.price, a.rooms, ad.city, ad.street, ad.house, a.description
+FROM apartments AS a
+JOIN addresses as ad ON a.address_id = ad.id
+WHERE a.`free` = 1
+-- Booking request (rooms, city, date, price). Запрос для бронирования: количество комнат, город, стоимость и даты.
+SELECT a.price, a.rooms, ad.city, ad.street, ad.house, a.description, b.checkin, b.checkout 
+FROM apartments AS a
+JOIN addresses as ad ON a.address_id = ad.id
+JOIN bookings as b ON a.id = b.apartment_id 
+WHERE '2015-05-06' NOT BETWEEN b.checkin AND b.checkout
+
